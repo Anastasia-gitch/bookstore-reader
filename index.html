@@ -1,0 +1,2266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Читатель — Книжный магазин</title>
+    <style>
+        /* ======================================= ГЛОБАЛЬНЫЕ СТИЛИ ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: #fcf6f3;
+            color: #2d1b16;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        :root {
+            --coral: #e65c4a;
+            --coral-light: #fceae7;
+            --coral-soft: #f7d9d3;
+            --coral-dark: #b34030;
+            --gold: #d4a373;
+            --shadow: 0 8px 24px rgba(200, 80, 60, 0.10);
+            --shadow-lg: 0 16px 48px rgba(200, 80, 60, 0.15);
+            --radius: 24px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ================================== ШАПКА ======================================================= */
+        .header {
+            background: white;
+            padding: 0.7rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #f5e2db;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(6px);
+            background: rgba(255, 255, 255, 0.94);
+            gap: 0.8rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--coral);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-shrink: 0;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: var(--coral-dark);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #3d2a24;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: 0.2s;
+            padding: 0.3rem 0.6rem;
+            border-radius: 40px;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--coral);
+            background: var(--coral-light);
+        }
+
+        .nav-links a i {
+            color: var(--coral);
+            font-size: 0.9rem;
+        }
+
+        .nav-links .cart-badge {
+            background: var(--coral);
+            color: white;
+            border-radius: 50%;
+            padding: 0.05rem 0.4rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            margin-left: 2px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: #f5edea;
+            border-radius: 40px;
+            padding: 0.15rem 0.15rem 0.15rem 1rem;
+            border: 1px solid #f0d9d2;
+            transition: 0.2s;
+            flex: 1 1 220px;
+            min-width: 150px;
+        }
+
+        .search-bar:focus-within {
+            border-color: var(--coral);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(230, 92, 74, 0.15);
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+            width: 100%;
+            outline: none;
+            color: #2d1b16;
+        }
+
+        .search-bar input::placeholder {
+            color: #a4847a;
+            font-size: 0.85rem;
+        }
+
+        .search-bar button {
+            background: var(--coral);
+            border: none;
+            color: white;
+            padding: 0.35rem 1rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            font-size: 0.85rem;
+        }
+
+        .search-bar button:hover {
+            background: var(--coral-dark);
+        }
+
+        /* ============================================= КОНТЕЙНЕР ================================================= */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.2rem 1.5rem;
+            flex: 1;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--coral-dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .section-title a {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #a4847a;
+            transition: 0.2s;
+        }
+
+        .section-title a:hover {
+            color: var(--coral);
+        }
+
+        /* =============================================== СЕТКА КНИГ ================================================== */
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .book-card {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform var(--transition), box-shadow var(--transition);
+            border: 1px solid #f5e2db;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            will-change: transform;
+        }
+
+        .book-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .book-card .book-cover {
+            height: 220px;
+            background: #f3e6e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-position: center;
+            background-color: #f5e2db;
+            position: relative;
+            transition: transform var(--transition);
+        }
+
+        .book-card:hover .book-cover {
+            transform: scale(1.01);
+        }
+
+        .book-cover .book-icon {
+            opacity: 0.3;
+            font-size: 3rem;
+            color: #b97a6a;
+        }
+
+        .book-cover .badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            color: white;
+            padding: 0.15rem 0.6rem;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .book-cover .badge-new {
+            background: #2ecc71;
+        }
+
+        .book-cover .badge-bestseller {
+            background: #f39c12;
+        }
+
+        .book-cover .badge-discount {
+            background: #e74c3c;
+        }
+
+        .book-cover .badge-promo {
+            background: #9b59b6;
+        }
+
+        .book-info {
+            padding: 0.7rem 1rem 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .book-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            line-height: 1.3;
+            color: #2d1b16;
+            margin-bottom: 0.1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .book-author {
+            color: #7a5f55;
+            font-size: 0.8rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .book-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-bottom: 0.2rem;
+            flex-wrap: wrap;
+        }
+
+        .book-meta .category-tag {
+            font-size: 0.55rem;
+            background: var(--coral-light);
+            padding: 0.05rem 0.4rem;
+            border-radius: 20px;
+            color: var(--coral-dark);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+
+        .book-price {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--coral-dark);
+            margin: 0.2rem 0 0.05rem;
+        }
+
+        .book-price .old {
+            font-weight: 400;
+            color: #a4847a;
+            font-size: 0.8rem;
+            text-decoration: line-through;
+            margin-left: 4px;
+        }
+
+        .book-price .promo-tag {
+            font-size: 0.6rem;
+            background: #9b59b6;
+            color: white;
+            padding: 0.05rem 0.4rem;
+            border-radius: 20px;
+            margin-left: 4px;
+            font-weight: 600;
+        }
+
+        .book-rating {
+            font-size: 0.8rem;
+            color: #b68b7a;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 0.4rem;
+        }
+
+        .book-rating i {
+            color: #f4b942;
+        }
+
+        .book-rating .reviews-count {
+            color: #a4847a;
+            font-size: 0.7rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.3rem;
+            margin-top: auto;
+            flex-wrap: wrap;
+        }
+
+        .card-actions button {
+            background: var(--coral-light);
+            border: none;
+            padding: 0.35rem 0.6rem;
+            border-radius: 40px;
+            font-weight: 600;
+            color: var(--coral-dark);
+            cursor: pointer;
+            transition: all var(--transition);
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex: 1 1 auto;
+            justify-content: center;
+            border: 1px solid transparent;
+        }
+
+        .card-actions button:hover {
+            background: var(--coral);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(230, 92, 74, 0.3);
+        }
+
+        .card-actions .fav-btn {
+            background: #fce8e3;
+            color: #b35a48;
+            flex: 0 1 auto;
+            padding: 0.35rem 0.6rem;
+        }
+
+        .card-actions .fav-btn.active {
+            background: var(--coral);
+            color: white;
+        }
+
+        .card-actions .detail-btn {
+            background: #e8f0f0;
+            color: #3d6b6b;
+            flex: 0 1 auto;
+        }
+
+        .card-actions .detail-btn:hover {
+            background: #3d6b6b;
+            color: white;
+        }
+
+        /* =============================================== ЗАГРУЗКА ЕЩЁ ========================================= */
+        .load-more-container {
+            text-align: center;
+            margin: 2rem 0 1rem;
+        }
+
+        .load-more-btn {
+            background: var(--coral);
+            color: white;
+            border: none;
+            padding: 0.7rem 2.5rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .load-more-btn:hover {
+            background: var(--coral-dark);
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(230, 92, 74, 0.3);
+        }
+
+        .load-more-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* =============================================== ФИЛЬТРЫ КАТАЛОГА ========================================= */
+        .catalog-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding: 0.8rem 0;
+            border-bottom: 2px solid #f5e2db;
+        }
+
+        .catalog-filters .filter-btn {
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            border: 2px solid #f0d9d2;
+            background: white;
+            color: #5a3f36;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            font-size: 0.8rem;
+        }
+
+        .catalog-filters .filter-btn:hover {
+            border-color: var(--coral);
+            color: var(--coral);
+        }
+
+        .catalog-filters .filter-btn.active {
+            background: var(--coral);
+            color: white;
+            border-color: var(--coral);
+        }
+
+        /* =============================================== КОРЗИНА ========================================= */
+        .cart-wrapper {
+            background: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .cart-header {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 0.5fr;
+            gap: 1rem;
+            padding: 0.6rem 0;
+            border-bottom: 2px solid #f5e2db;
+            font-weight: 700;
+            color: #7a5f55;
+            font-size: 0.85rem;
+        }
+
+        .cart-item-modern {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 0.5fr;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.7rem 0;
+            border-bottom: 1px solid #f5e2db;
+            transition: var(--transition);
+        }
+
+        .cart-item-modern:hover {
+            background: #fcf6f3;
+            margin: 0 -1rem;
+            padding: 0.7rem 1rem;
+            border-radius: 16px;
+        }
+
+        .cart-item-modern .item-info {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .cart-item-modern .item-thumb {
+            width: 50px;
+            height: 68px;
+            background: #f3e6e1;
+            border-radius: 10px;
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .cart-item-modern .item-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .cart-item-modern .item-author {
+            color: #7a5f55;
+            font-size: 0.75rem;
+        }
+
+        .cart-item-modern .item-price {
+            font-weight: 700;
+            color: var(--coral-dark);
+            font-size: 1rem;
+        }
+
+        .cart-item-modern .item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .cart-item-modern .item-quantity button {
+            background: var(--coral-light);
+            border: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--coral-dark);
+            font-size: 0.9rem;
+        }
+
+        .cart-item-modern .item-quantity button:hover {
+            background: var(--coral);
+            color: white;
+        }
+
+        .cart-item-modern .item-quantity span {
+            font-weight: 700;
+            font-size: 1rem;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .cart-item-modern .remove-btn {
+            background: none;
+            border: none;
+            color: #a4847a;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .cart-item-modern .remove-btn:hover {
+            color: var(--coral);
+            transform: scale(1.15);
+        }
+
+        .cart-total-modern {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 2px solid #f5e2db;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .cart-total-modern .total-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--coral-dark);
+        }
+
+        .cart-total-modern .checkout-btn {
+            background: var(--coral);
+            color: white;
+            border: none;
+            padding: 0.6rem 2rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cart-total-modern .checkout-btn:hover {
+            background: var(--coral-dark);
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(230, 92, 74, 0.3);
+        }
+
+        /* =============================================== ИЗБРАННОЕ ========================================= */
+        .fav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .fav-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 0.8rem;
+            box-shadow: var(--shadow);
+            border: 1px solid #f5e2db;
+            transition: all var(--transition);
+            text-align: center;
+            position: relative;
+        }
+
+        .fav-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .fav-card .fav-cover {
+            height: 150px;
+            background: #f3e6e1;
+            border-radius: 14px;
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 0.6rem;
+        }
+
+        .fav-card .fav-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 0.1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .fav-card .fav-author {
+            color: #7a5f55;
+            font-size: 0.75rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .fav-card .fav-price {
+            font-weight: 700;
+            color: var(--coral-dark);
+            font-size: 1rem;
+        }
+
+        .fav-card .fav-actions {
+            display: flex;
+            gap: 0.3rem;
+            margin-top: 0.6rem;
+            justify-content: center;
+        }
+
+        .fav-card .fav-actions button {
+            padding: 0.25rem 0.6rem;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .fav-card .fav-actions .add-cart-btn-fav {
+            background: var(--coral);
+            color: white;
+        }
+
+        .fav-card .fav-actions .add-cart-btn-fav:hover {
+            background: var(--coral-dark);
+        }
+
+        .fav-card .fav-actions .remove-fav-btn {
+            background: var(--coral-light);
+            color: var(--coral-dark);
+        }
+
+        .fav-card .fav-actions .remove-fav-btn:hover {
+            background: var(--coral);
+            color: white;
+        }
+
+        .fav-card .fav-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--coral);
+            color: white;
+            padding: 0.1rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.55rem;
+            font-weight: 700;
+        }
+
+        /* =============================================== ДЕТАЛЬНАЯ СТРАНИЦА ========================================= */
+        .detail-reviews {
+            margin-top: 1.5rem;
+            background: white;
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .detail-reviews h3 {
+            font-size: 1.2rem;
+            color: var(--coral-dark);
+            margin-bottom: 0.8rem;
+        }
+
+        .detail-reviews .review-item {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #f5e2db;
+        }
+
+        .detail-reviews .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-reviews .review-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .detail-reviews .review-header .reviewer {
+            font-weight: 600;
+            color: #2d1b16;
+            font-size: 0.9rem;
+        }
+
+        .detail-reviews .review-header .review-date {
+            color: #a4847a;
+            font-size: 0.75rem;
+        }
+
+        .detail-reviews .review-text {
+            color: #3d2a24;
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+
+        .detail-reviews .review-rating {
+            color: #f4b942;
+        }
+
+        /* ====================================================== ФОРМЫ =============================================== */
+        .auth-form {
+            max-width: 400px;
+            margin: 1.5rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .auth-form h2 {
+            text-align: center;
+            color: var(--coral-dark);
+            margin-bottom: 1.5rem;
+            font-size: 1.6rem;
+        }
+
+        .auth-form .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .auth-form label {
+            display: block;
+            font-weight: 600;
+            color: #3d2a24;
+            margin-bottom: 0.2rem;
+            font-size: 0.85rem;
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: 1px solid #f0d9d2;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            background: #fcf6f3;
+            transition: 0.2s;
+        }
+
+        .auth-form input:focus {
+            border-color: var(--coral);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(230, 92, 74, 0.15);
+            background: white;
+        }
+
+        .auth-form .auth-btn {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--coral);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 0.3rem;
+        }
+
+        .auth-form .auth-btn:hover {
+            background: var(--coral-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(230, 92, 74, 0.3);
+        }
+
+        .auth-form .switch-link {
+            text-align: center;
+            margin-top: 1rem;
+            color: #7a5f55;
+            font-size: 0.9rem;
+        }
+
+        .auth-form .switch-link a {
+            color: var(--coral);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .auth-form .switch-link a:hover {
+            text-decoration: underline;
+        }
+
+        .auth-form .error-msg {
+            color: #c0392b;
+            font-size: 0.8rem;
+            margin-top: 0.2rem;
+            display: none;
+        }
+
+        /* ============================================ ГЛАВНАЯ: БАННЕР ============================================ */
+        .hero-banner {
+            background: linear-gradient(135deg, #fceae7 0%, #f7d9d3 100%);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #f5d6cd;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-banner::before {
+            content: '📚';
+            position: absolute;
+            right: -10px;
+            bottom: -10px;
+            font-size: 8rem;
+            opacity: 0.08;
+            transform: rotate(-10deg);
+        }
+
+        .hero-banner h1 {
+            font-size: 1.8rem;
+            color: var(--coral-dark);
+            position: relative;
+        }
+
+        .hero-banner p {
+            font-size: 1rem;
+            color: #5a3f36;
+            max-width: 450px;
+            position: relative;
+        }
+
+        .hero-banner .btn-primary {
+            background: var(--coral);
+            color: white;
+            padding: 0.6rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        .hero-banner .btn-primary:hover {
+            background: var(--coral-dark);
+            transform: scale(1.04);
+            box-shadow: 0 4px 16px rgba(230, 92, 74, 0.3);
+        }
+
+        /* ============================================ ЛИЧНЫЙ КАБИНЕТ ============================================ */
+        .profile-card {
+            max-width: 550px;
+            margin: 1.5rem auto;
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .profile-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .profile-card .avatar {
+            font-size: 4rem;
+            color: var(--coral);
+            margin-bottom: 0.3rem;
+        }
+
+        .profile-card .user-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #2d1b16;
+        }
+
+        .profile-card .user-email {
+            color: #7a5f55;
+            margin-bottom: 1.2rem;
+            font-size: 0.95rem;
+        }
+
+        .profile-card .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.8rem;
+            margin: 1.2rem 0;
+        }
+
+        .profile-card .stat-item {
+            background: #fcf6f3;
+            padding: 0.6rem;
+            border-radius: 14px;
+            transition: var(--transition);
+        }
+
+        .profile-card .stat-item:hover {
+            background: var(--coral-light);
+        }
+
+        .profile-card .stat-item .num {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--coral-dark);
+        }
+
+        .profile-card .stat-item .label {
+            font-size: 0.75rem;
+            color: #7a5f55;
+        }
+
+        .profile-card .logout-btn {
+            background: var(--coral-light);
+            border: none;
+            padding: 0.5rem 1.8rem;
+            border-radius: 40px;
+            color: var(--coral-dark);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .profile-card .logout-btn:hover {
+            background: var(--coral);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* ============================================ ПУСТЫЕ СОСТОЯНИЯ ============================================ */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 4rem;
+            color: var(--coral-light);
+            margin-bottom: 0.8rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            color: var(--coral-dark);
+            margin-bottom: 0.4rem;
+        }
+
+        .empty-state p {
+            color: #7a5f55;
+            max-width: 380px;
+            margin: 0 auto 1.2rem;
+            font-size: 0.95rem;
+        }
+
+        .empty-state .btn-primary {
+            background: var(--coral);
+            color: white;
+            padding: 0.6rem 1.8rem;
+            border-radius: 40px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+
+        .empty-state .btn-primary:hover {
+            background: var(--coral-dark);
+            transform: scale(1.02);
+        }
+
+        /* ====================================================== ПОДВАЛ =============================================== */
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+            color: #b68b7a;
+            border-top: 1px solid #f5e2db;
+            padding: 1.5rem 0 1rem;
+            font-size: 0.85rem;
+        }
+
+        /* ======================================================== АДАПТИВ ============================================== */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.4rem;
+                padding: 0.5rem 1rem;
+            }
+            .nav-links {
+                justify-content: center;
+                gap: 0.4rem;
+            }
+            .nav-links a {
+                font-size: 0.8rem;
+                padding: 0.2rem 0.4rem;
+            }
+            .search-bar {
+                flex: 1 1 100%;
+            }
+            .book-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 0.8rem;
+            }
+            .book-cover {
+                height: 170px;
+            }
+            .hero-banner {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.8rem;
+                padding: 1.2rem;
+            }
+            .hero-banner::before {
+                display: none;
+            }
+            .profile-card .stat-grid {
+                grid-template-columns: 1fr;
+            }
+            .catalog-filters {
+                gap: 0.3rem;
+            }
+            .catalog-filters .filter-btn {
+                padding: 0.2rem 0.6rem;
+                font-size: 0.7rem;
+            }
+            .detail-reviews {
+                padding: 0.8rem;
+            }
+            .cart-header {
+                display: none;
+            }
+            .cart-item-modern {
+                grid-template-columns: 1fr;
+                gap: 0.3rem;
+                padding: 0.7rem;
+                text-align: center;
+            }
+            .cart-item-modern .item-info {
+                flex-direction: column;
+            }
+            .cart-total-modern {
+                flex-direction: column;
+                text-align: center;
+            }
+            .fav-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 0.8rem;
+            }
+            .fav-card .fav-cover {
+                height: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .book-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 0.6rem;
+            }
+            .book-cover {
+                height: 140px;
+            }
+            .book-title {
+                font-size: 0.8rem;
+            }
+            .book-price {
+                font-size: 0.95rem;
+            }
+            .container {
+                padding: 0.8rem 0.8rem;
+            }
+            .cart-wrapper {
+                padding: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============================================== ШАПКА ========================================================== -->
+<header class="header">
+    <div class="logo"><i class="fas fa-book-open"></i> Читатель</div>
+    <nav class="nav-links">
+        <a href="#" onclick="navigateTo('home')"><i class="fas fa-home"></i> Главная</a>
+        <a href="#" onclick="navigateTo('catalog')"><i class="fas fa-th-list"></i> Каталог</a>
+        <a href="#" onclick="navigateTo('favorites')"><i class="fas fa-heart"></i> Любимое</a>
+        <a href="#" onclick="navigateTo('cart')"><i class="fas fa-shopping-cart"></i> Корзина <span class="cart-badge" id="cartBadge">0</span></a>
+        <a href="#" onclick="navigateTo('profile')"><i class="fas fa-user-circle"></i> <span id="userNameDisplay">Вход</span></a>
+    </nav>
+    <div class="search-bar">
+        <input type="text" id="globalSearch" placeholder="Поиск книг, авторов..." onkeyup="if(event.key==='Enter') performSearch()">
+        <button onclick="performSearch()"><i class="fas fa-search"></i> Найти</button>
+    </div>
+</header>
+
+<!-- ========================================== ОСНОВНОЙ КОНТЕНТ ================================================== -->
+<main class="container" id="appContainer"></main>
+
+<!-- ============================================= ПОДВАЛ ========================================================= -->
+<footer>© 2026 «Читатель» — более <span id="totalBooksCount">0</span> книг для вас</footer>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<script>
+    // =================================================================================================================
+    // ХУДОЖЕСТВЕННЫЕ ФРАЗЫ
+    // =================================================================================================================
+    const EMPTY_SEARCH_PHRASES = [
+        "📖 «Книга — это мечта, которую ты держишь в руках» — Нил Гейман",
+        "🌟 «Там, где есть книги, нет места одиночеству»",
+        "📚 «Каждая прочитанная книга — это прожитая жизнь»",
+        "✨ «Книги — это корабли мысли, странствующие по волнам времени»",
+        "🌙 «Чтение — это побег в другие миры, другие времена, другие жизни»",
+        "🌸 «Книга — лучший друг, который никогда не предаст»",
+        "🎭 «В книгах мы находим себя, теряемся и снова находим»",
+        "🌊 «Книги — это мосты между душами»",
+        "🔥 «Тот, кто читает, живет тысячу жизней»",
+        "💫 «Книги дарят нам крылья, чтобы летать в мире фантазии»"
+    ];
+
+    function getRandomPhrase() {
+        return EMPTY_SEARCH_PHRASES[Math.floor(Math.random() * EMPTY_SEARCH_PHRASES.length)];
+    }
+
+    // =================================================================================================================
+    // АЛГОРИТМ АКЦИЙ
+    // =================================================================================================================
+    function applyPromotions(book) {
+        const now = new Date();
+        const day = now.getDay(); // 0=воскресенье, 1=понедельник...
+        const hour = now.getHours();
+        const dayOfMonth = now.getDate();
+        const month = now.getMonth();
+        
+        let discount = 0;
+        let promotionType = null;
+
+        // 1. Сезонные распродажи (зима, весна, лето, осень)
+        if (month === 11 && dayOfMonth >= 20) { // Декабрь, предновогодняя распродажа
+            discount = 25;
+            promotionType = '🎄 Новогодняя распродажа';
+        } else if (month === 2 && dayOfMonth >= 20) { // Март, весенняя распродажа
+            discount = 20;
+            promotionType = '🌸 Весенняя распродажа';
+        } else if (month === 7 && dayOfMonth >= 15) { // Август, летняя распродажа
+            discount = 30;
+            promotionType = '☀️ Летняя распродажа';
+        } else if (month === 9 && dayOfMonth >= 20) { // Октябрь, осенняя распродажа
+            discount = 25;
+            promotionType = '🍂 Осенняя распродажа';
+        }
+
+        // 2. День недели: скидка на определенные категории
+        const categoryDiscounts = {
+            0: { cat: 'классика', discount: 15, label: 'Воскресная классика' },
+            1: { cat: 'фантастика', discount: 10, label: 'Фантастический понедельник' },
+            2: { cat: 'детектив', discount: 15, label: 'Детективный вторник' },
+            3: { cat: 'фэнтези', discount: 12, label: 'Фэнтези-среда' },
+            4: { cat: 'научпоп', discount: 10, label: 'Научный четверг' },
+            5: { cat: 'современные романы', discount: 15, label: 'Романтическая пятница' },
+            6: { cat: 'детская литература', discount: 20, label: 'Семейная суббота' }
+        };
+
+        if (categoryDiscounts[day]) {
+            const promo = categoryDiscounts[day];
+            if (book.category.includes(promo.cat)) {
+                if (promo.discount > discount) {
+                    discount = promo.discount;
+                    promotionType = promo.label;
+                }
+            }
+        }
+
+        // 3. Случайные flash-акции (10% книг получают дополнительную скидку)
+        if (book.id % 7 === 0 && discount < 30) {
+            discount = Math.max(discount, 15 + (book.id % 10));
+            promotionType = '⚡ Flash-акция';
+        }
+
+        // 4. Акция "Купи 2 - получи скидку" (отмечаем для корзины, но здесь просто показываем)
+        if (book.id % 5 === 0 && discount < 20) {
+            discount = Math.max(discount, 10);
+            promotionType = '🎯 Спецпредложение';
+        }
+
+        // 5. Ночные скидки (с 23:00 до 6:00)
+        if (hour >= 23 || hour < 6) {
+            if (discount < 20) {
+                discount = Math.max(discount, 15);
+                promotionType = '🌙 Ночная скидка';
+            }
+        }
+
+        // 6. Акция для новых книг (первые 30 книг в списке)
+        if (book.id <= 30 && discount < 15) {
+            discount = Math.max(discount, 10);
+            promotionType = '✨ Новинка со скидкой';
+        }
+
+        // 7. Бестселлеры - постоянная скидка
+        if (book.isBestseller && discount < 10) {
+            discount = Math.max(discount, 8);
+            promotionType = '🏆 Бестселлер';
+        }
+
+        // Применяем скидку, если она больше 5%
+        if (discount >= 5) {
+            const oldPrice = book.price;
+            const newPrice = Math.round(oldPrice * (1 - discount / 100));
+            return {
+                ...book,
+                oldPrice: oldPrice,
+                price: newPrice,
+                discount: discount,
+                promotionType: promotionType,
+                hasPromotion: true
+            };
+        }
+
+        return { ...book, hasPromotion: false };
+    }
+
+    // =================================================================================================================
+    // ГЕНЕРАЦИЯ 320+ НАСТОЯЩИХ КНИГ С ОБЛОЖКАМИ
+    // =================================================================================================================
+    function generateBooks() {
+        const baseBooks = [
+            // Классическая литература
+            { title: "Мастер и Маргарита", author: "Михаил Булгаков", category: ["классика"], price: 699, description: "Роман о дьяволе, который посещает Москву 1930-х годов." },
+            { title: "Война и мир", author: "Лев Толстой", category: ["классика"], price: 899, description: "Масштабная эпопея о жизни русского общества в эпоху Наполеоновских войн." },
+            { title: "Анна Каренина", author: "Лев Толстой", category: ["классика"], price: 799, description: "Трагическая история любви замужней женщины и блестящего офицера." },
+            { title: "Преступление и наказание", author: "Ф.М. Достоевский", category: ["классика"], price: 699, description: "Роман о студенте, который убивает старуху-процентщицу." },
+            { title: "Братья Карамазовы", author: "Ф.М. Достоевский", category: ["классика"], price: 899, description: "Последний роман о семье Карамазовых, их страстях и борьбе с верой." },
+            { title: "Идиот", author: "Ф.М. Достоевский", category: ["классика"], price: 799, description: "Роман о князе Мышкине, человеке с ангельской душой." },
+            { title: "Евгений Онегин", author: "Александр Пушкин", category: ["классика"], price: 599, description: "Роман в стихах о петербургском денди и юной Татьяне Лариной." },
+            { title: "Герой нашего времени", author: "Михаил Лермонтов", category: ["классика"], price: 699, description: "Первый русский психологический роман о Печорине." },
+            { title: "Мертвые души", author: "Николай Гоголь", category: ["классика"], price: 699, description: "Сатирическая поэма о Чичикове, скупающем мертвые души." },
+            { title: "Три товарища", author: "Эрих Мария Ремарк", category: ["классика"], price: 599, description: "Роман о трех друзьях, пытающихся выжить в послевоенной Германии." },
+            { title: "Отцы и дети", author: "Иван Тургенев", category: ["русская классика"], price: 699, description: "Роман о конфликте поколений и нигилисте Базарове." },
+            { title: "Обломов", author: "Иван Гончаров", category: ["русская классика"], price: 599, description: "История барина, который проводит жизнь на диване." },
+            { title: "Портрет Дориана Грея", author: "Оскар Уайльд", category: ["классика", "философия"], price: 699, description: "О юноше, продавшем душу ради вечной красоты." },
+            { title: "451 градус по Фаренгейту", author: "Рэй Брэдбери", category: ["фантастика", "классика"], price: 699, description: "Антиутопия о мире, где книги запрещены." },
+            { title: "1984", author: "Джордж Оруэлл", category: ["фантастика", "классика"], price: 699, description: "Антиутопия о тоталитарном государстве." },
+            { title: "Скотный двор", author: "Джордж Оруэлл", category: ["классика", "политика"], price: 499, description: "Аллегорическая повесть о животных, свергнувших человека." },
+            { title: "О дивный новый мир", author: "Олдос Хаксли", category: ["фантастика", "классика"], price: 699, description: "Антиутопия о мире, где люди программируются на счастье." },
+            { title: "Над пропастью во ржи", author: "Джером Сэлинджер", category: ["классика"], price: 799, description: "Роман о подростке, бунтующем против лицемерия." },
+            { title: "Заводной апельсин", author: "Энтони Берджесс", category: ["классика", "философия"], price: 599, description: "О насилии, свободе воли и перевоспитании." },
+            // Фэнтези и фантастика
+            { title: "Дюна", author: "Фрэнк Герберт", category: ["фантастика"], price: 999, description: "Эпическая космическая опера о пустынной планете Арракис." },
+            { title: "Игра престолов", author: "Джордж Мартин", category: ["фэнтези"], price: 1299, description: "Первая книга цикла 'Песнь льда и пламени'." },
+            { title: "Гарри Поттер и философский камень", author: "Джоан Роулинг", category: ["фэнтези", "детская литература"], price: 799, description: "Начало истории о мальчике-волшебнике." },
+            { title: "Властелин колец", author: "Дж.Р.Р. Толкин", category: ["фэнтези"], price: 999, description: "Эпическая история о хоббите Фродо, уничтожающем Кольцо." },
+            { title: "Метро 2033", author: "Дмитрий Глуховский", category: ["постапокалипсис"], price: 699, description: "Люди выживают в московском метро после ядерной войны." },
+            { title: "Голодные игры", author: "Сьюзен Коллинз", category: ["фантастика"], price: 799, description: "Девушка участвует в смертельных играх на выживание." },
+            { title: "Бегущий в лабиринте", author: "Джеймс Дэшнер", category: ["фантастика"], price: 699, description: "Подростки пытаются найти выход из лабиринта." },
+            { title: "Дивергент", author: "Вероника Рот", category: ["фантастика"], price: 699, description: "Общество разделено на фракции по качествам." },
+            { title: "Сумерки", author: "Стефани Майер", category: ["романтика", "фэнтези"], price: 699, description: "Романтическая история любви девушки и вампира." },
+            { title: "Игра Эндера", author: "Орсон Скотт Кард", category: ["фантастика"], price: 799, description: "Гениальный ребенок готовится к войне с инопланетянами." },
+            { title: "Конец вечности", author: "Айзек Азимов", category: ["фантастика"], price: 899, description: "Философская история о времени и выборе." },
+            { title: "Основание", author: "Айзек Азимов", category: ["фантастика"], price: 899, description: "Сага о предвидении падения Галактической Империи." },
+            { title: "Я, робот", author: "Айзек Азимов", category: ["фантастика"], price: 699, description: "Сборник рассказов о роботах и Трех Законах." },
+            // Детективы и триллеры
+            { title: "Девушка с татуировкой дракона", author: "Стиг Ларссон", category: ["детектив"], price: 799, description: "Журналист и хакер расследуют исчезновение девушки." },
+            { title: "Код да Винчи", author: "Дэн Браун", category: ["детектив"], price: 699, description: "Профессор Лэнгдон расследует убийство в Лувре." },
+            { title: "Тень ветра", author: "Карлос Руис Сафон", category: ["детектив", "современные романы"], price: 899, description: "История о таинственной библиотеке и поиске автора." },
+            { title: "Зеленая миля", author: "Стивен Кинг", category: ["триллер", "драма"], price: 899, description: "История о тюремном надзирателе и заключенном с даром." },
+            { title: "Парфюмер", author: "Патрик Зюскинд", category: ["триллер", "классика"], price: 799, description: "Человек с невероятным обонянием становится убийцей." },
+            { title: "Цифровая крепость", author: "Дэн Браун", category: ["триллер", "детектив"], price: 699, description: "Триллер о криптографии и правительственных секретах." },
+            { title: "Утраченный символ", author: "Дэн Браун", category: ["детектив"], price: 799, description: "Новые приключения Роберта Лэнгдона в Вашингтоне." },
+            { title: "Инферно", author: "Дэн Браун", category: ["детектив"], price: 799, description: "Лэнгдон расследует загадку, связанную с Данте." },
+            { title: "Молчание ягнят", author: "Томас Харрис", category: ["триллер", "детектив"], price: 699, description: "История агента ФБР и каннибала Ганнибала Лектера." },
+            { title: "Оно", author: "Стивен Кинг", category: ["триллер"], price: 999, description: "Группа детей противостоит древнему злу." },
+            // Нон-фикшн
+            { title: "Человек в поисках смысла", author: "Виктор Франкл", category: ["психология", "философия"], price: 899, description: "Как найти смысл жизни даже в самых тяжелых условиях." },
+            { title: "Антихрупкость", author: "Нассим Талеб", category: ["экономика", "философия"], price: 1199, description: "Системы становятся сильнее от хаоса и неопределенности." },
+            { title: "Черный лебедь", author: "Нассим Талеб", category: ["экономика"], price: 999, description: "О непредсказуемых событиях, которые меняют мир." },
+            { title: "Семь привычек", author: "Стивен Кови", category: ["саморазвитие"], price: 999, description: "Практическое руководство по личной эффективности." },
+            { title: "Краткая история времени", author: "Стивен Хокинг", category: ["научпоп"], price: 899, description: "Объяснение сложнейших концепций современной физики." },
+            { title: "Происхождение видов", author: "Чарльз Дарвин", category: ["биология", "классика"], price: 499, description: "Теория эволюции и естественного отбора." },
+            { title: "Секс в большом городе", author: "Кэндис Бушнелл", category: ["современные романы"], price: 699, description: "Истории четырех подруг в Нью-Йорке." },
+            { title: "Sapiens. Краткая история человечества", author: "Юваль Ной Харари", category: ["научпоп", "история"], price: 999, description: "История человечества от каменного века до наших дней." },
+            { title: "Богатый папа, бедный папа", author: "Роберт Кийосаки", category: ["экономика", "саморазвитие"], price: 899, description: "Финансовые уроки от двух отцов." },
+            // Современные романы
+            { title: "Щегол", author: "Донна Тартт", category: ["современные романы"], price: 1299, description: "История мальчика, укравшего знаменитую картину." },
+            { title: "Книжный вор", author: "Маркус Зусак", category: ["современные романы", "классика"], price: 799, description: "Девочка в нацистской Германии находит утешение в книгах." },
+            { title: "Жизнь Пи", author: "Янн Мартел", category: ["современные романы"], price: 799, description: "Мальчик выживает в шлюпке с тигром." },
+            { title: "Все, что мы оставили позади", author: "Кристин Ханна", category: ["современные романы", "романтика"], price: 899, description: "История любви и выживания во время Вьетнамской войны." },
+            { title: "Ярмарка тщеславия", author: "Уильям Теккерей", category: ["классика"], price: 699, description: "Сатира на английское общество XIX века." },
+            { title: "Грозовой перевал", author: "Эмили Бронте", category: ["классика", "романтика"], price: 599, description: "Трагическая история любви на фоне мрачных пейзажей." },
+            // Дополнительные книги для увеличения количества
+            { title: "Хоббит", author: "Дж.Р.Р. Толкин", category: ["фэнтези", "детская литература"], price: 799, description: "Приключения хоббита Бильбо в поисках сокровищ." },
+            { title: "Сильмариллион", author: "Дж.Р.Р. Толкин", category: ["фэнтези"], price: 899, description: "Мифология мира Средиземья." },
+            { title: "Дети Хурина", author: "Дж.Р.Р. Толкин", category: ["фэнтези"], price: 799, description: "Трагическая история из Первой эпохи Средиземья." },
+            { title: "Битва королей", author: "Джордж Мартин", category: ["фэнтези"], price: 999, description: "Продолжение саги о престолонаследии." },
+            { title: "Буря мечей", author: "Джордж Мартин", category: ["фэнтези"], price: 1099, description: "Третья часть Песни льда и пламени." },
+            { title: "Пир стервятников", author: "Джордж Мартин", category: ["фэнтези"], price: 1099, description: "Четвертая часть эпопеи." },
+            { title: "Танец с драконами", author: "Джордж Мартин", category: ["фэнтези"], price: 1199, description: "Пятая часть Песни льда и пламени." },
+            { title: "Гарри Поттер и Тайная комната", author: "Джоан Роулинг", category: ["фэнтези", "детская литература"], price: 799, description: "Второй год в Хогвартсе." },
+            { title: "Гарри Поттер и узник Азкабана", author: "Джоан Роулинг", category: ["фэнтези", "детская литература"], price: 899, description: "Третий год обучения." },
+            { title: "Гарри Поттер и Кубок огня", author: "Джоан Роулинг", category: ["фэнтези", "детская литература"], price: 899, description: "Четвертый год и Турнир Трех Волшебников." },
+            { title: "Гарри Поттер и Орден Феникса", author: "Джоан Роулинг", category: ["фэнтези", "детская литература"], price: 999, description: "Пятый год в Хогвартсе." },
+            { title: "Гарри Поттер и Принц-полукровка", author: "Джоан Роулинг", category: ["фэнтези", "детская литература"], price: 999, description: "Шестой год обучения." },
+            { title: "Гарри Поттер и Дары Смерти", author: "Джоан Роулинг", category: ["фэнтези", "детская литература"], price: 1099, description: "Финальная часть саги." },
+            { title: "Дюна: Мессия", author: "Фрэнк Герберт", category: ["фантастика"], price: 899, description: "Продолжение истории о Поле Атрейдесе." },
+            { title: "Дети Дюны", author: "Фрэнк Герберт", category: ["фантастика"], price: 999, description: "Дети Пола Атрейдеса вступают в борьбу за власть." },
+            { title: "Бог-император Дюны", author: "Фрэнк Герберт", category: ["фантастика"], price: 999, description: "Тысячелетия правления Лето II." },
+            { title: "Еретики Дюны", author: "Фрэнк Герберт", category: ["фантастика"], price: 999, description: "Золотой путь продолжается." },
+            { title: "Капитул Дюны", author: "Фрэнк Герберт", category: ["фантастика"], price: 999, description: "Финал саги." },
+        ];
+
+        const categories = ["фантастика", "фэнтези", "детектив", "классика", "русская классика", "современные романы", "научпоп", "психология", "философия", "экономика", "саморазвитие", "детская литература", "романтика", "триллер", "постапокалипсис"];
+
+        const books = [];
+
+        // Основные книги с обложками из разных источников
+        const coverIds = [
+            125, 126, 127, 128, 129, 130, 131, 132, 133, 134,
+            135, 136, 137, 138, 139, 140, 141, 142, 143, 144,
+            145, 146, 147, 148, 149, 150, 151, 152, 153, 154,
+            155, 156, 157, 158, 159, 160, 161, 162, 163, 164,
+            165, 166, 167, 168, 169, 170, 171, 172, 173, 174,
+            175, 176, 177, 178, 179, 180, 181, 182, 183, 184
+        ];
+
+        baseBooks.forEach((b, i) => {
+            const coverId = coverIds[i % coverIds.length];
+            const book = {
+                id: i + 1,
+                ...b,
+                cover: `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`,
+                rating: (3.5 + Math.random() * 1.5).toFixed(1),
+                reviews: 50 + Math.floor(Math.random() * 2000),
+                isNew: i < 20,
+                isBestseller: i % 4 === 0,
+            };
+            // Применяем акции
+            books.push(applyPromotions(book));
+        });
+
+        // Дополнительные книги до 320+
+        const extraAuthors = [
+            "Стивен Кинг", "Джоан Роулинг", "Джордж Мартин", "Фрэнк Герберт",
+            "Айзек Азимов", "Дэн Браун", "Стиг Ларссон", "Патрик Зюскинд",
+            "Антуан де Сент-Экзюпери", "Даниэль Дефо", "Марк Твен", "Чарльз Диккенс",
+            "Джейн Остин", "Эрнест Хемингуэй", "Френсис Скотт Фицджеральд",
+            "Габриэль Гарсиа Маркес", "Харпер Ли", "Джон Стейнбек"
+        ];
+        const extraTitles = [
+            "Извлечение троих", "Бесплодные земли", "Ветер сквозь замочную скважину",
+            "Гроздья гнева", "Гордость и предубеждение", "Большие надежды",
+            "Приключения Тома Сойера", "Приключения Гекльберри Финна",
+            "Сто лет одиночества", "Убить пересмешника", "По ком звонит колокол",
+            "И восходит солнце", "Алая буква", "Тихий Дон",
+            "Доктор Живаго", "Маленькие женщины", "Таинственный сад",
+            "Кристина", "Кэрри", "Сияние", "Кладбище домашних животных",
+            "Хроники Нарнии: Лев, колдунья и платяной шкаф",
+            "Хроники Нарнии: Принц Каспиан", "Хроники Нарнии: Покоритель зари",
+            "Хроники Нарнии: Серебряное кресло", "Хроники Нарнии: Конь и его мальчик"
+        ];
+
+        extraTitles.forEach((title, i) => {
+            const idx = books.length;
+            const price = 299 + Math.floor(Math.random() * 1001);
+            const catCount = 1 + Math.floor(Math.random() * 2);
+            const cats = [];
+            const availableCategories = categories.filter(c => !["политика", "биология", "история"].includes(c));
+            for (let j = 0; j < catCount; j++) {
+                cats.push(availableCategories[(idx + j * 7) % availableCategories.length]);
+            }
+            if (cats.length === 0) {
+                cats.push(availableCategories[0]);
+            }
+            const coverId = 200 + i;
+            const book = {
+                id: idx + 1,
+                title: title,
+                author: extraAuthors[i % extraAuthors.length],
+                category: cats,
+                cover: `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`,
+                price: price,
+                oldPrice: null,
+                discount: 0,
+                rating: (3.5 + Math.random() * 1.5).toFixed(1),
+                reviews: 50 + Math.floor(Math.random() * 1500),
+                isNew: i < 15,
+                isBestseller: i % 5 === 0,
+                description: `"${title}" — увлекательное произведение от автора ${extraAuthors[i % extraAuthors.length]}.`
+            };
+            books.push(applyPromotions(book));
+        });
+
+        // Добиваем до 320+
+        while (books.length < 320) {
+            const idx = books.length;
+            const price = 299 + Math.floor(Math.random() * 1001);
+            const availableCategories = categories.filter(c => !["политика", "биология", "история"].includes(c));
+            const cat = availableCategories[idx % availableCategories.length];
+            const coverId = 400 + idx;
+            const book = {
+                id: idx + 1,
+                title: `Книга ${idx + 1}`,
+                author: `Автор ${idx + 1}`,
+                category: [cat],
+                cover: `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`,
+                price: price,
+                oldPrice: null,
+                discount: 0,
+                rating: (3.5 + Math.random() * 1.5).toFixed(1),
+                reviews: 50 + Math.floor(Math.random() * 1000),
+                isNew: false,
+                isBestseller: false,
+                description: `Увлекательное произведение, полное приключений.`
+            };
+            books.push(applyPromotions(book));
+        }
+
+        return books;
+    }
+
+    const BOOKS = generateBooks();
+
+    // =================================================================================================================
+    // ХРАНИЛИЩА
+    // =================================================================================================================
+    
+    let cart = JSON.parse(localStorage.getItem('reader_cart') || '[]');
+    let favorites = JSON.parse(localStorage.getItem('reader_fav') || '[]');
+    let currentUser = localStorage.getItem('reader_user') || null;
+    let users = JSON.parse(localStorage.getItem('reader_users') || '[]');
+
+    function saveCart() { localStorage.setItem('reader_cart', JSON.stringify(cart)); }
+    function saveFav() { localStorage.setItem('reader_fav', JSON.stringify(favorites)); }
+    function saveUsers() { localStorage.setItem('reader_users', JSON.stringify(users)); }
+    function saveUser(name) {
+        if (name) {
+            localStorage.setItem('reader_user', name);
+            currentUser = name;
+        } else {
+            localStorage.removeItem('reader_user');
+            currentUser = null;
+        }
+        updateUserDisplay();
+    }
+
+    function updateUserDisplay() {
+        const display = document.getElementById('userNameDisplay');
+        if (display) display.textContent = currentUser || 'Вход';
+        const badge = document.getElementById('cartBadge');
+        if (badge) badge.textContent = cart.length;
+        const totalBooks = document.getElementById('totalBooksCount');
+        if (totalBooks) totalBooks.textContent = BOOKS.length;
+    }
+
+    // ================================================================================================================
+    // ПОСТЕПЕННАЯ ЗАГРУЗКА
+    // ================================================================================================================
+
+    let currentPage = 0;
+    const PAGE_SIZE = 20;
+    let currentBooks = [];
+
+    function renderBooksPaginated(books, containerId, append = false) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (!append) {
+            container.innerHTML = '';
+            currentBooks = books;
+            currentPage = 0;
+        }
+
+        const start = currentPage * PAGE_SIZE;
+        const end = Math.min(start + PAGE_SIZE, books.length);
+        const pageBooks = books.slice(start, end);
+
+        const oldBtn = document.querySelector('.load-more-container');
+        if (oldBtn && !append) oldBtn.remove();
+
+        const fragment = document.createDocumentFragment();
+        pageBooks.forEach(book => {
+            const card = createBookCard(book);
+            fragment.appendChild(card);
+        });
+        container.appendChild(fragment);
+
+        container.querySelectorAll('.add-cart-btn').forEach(btn => {
+            btn.addEventListener('click', () => addToCart(parseInt(btn.dataset.id)));
+        });
+        container.querySelectorAll('.fav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                toggleFavorite(parseInt(btn.dataset.id));
+                refreshCurrentPage();
+            });
+        });
+        container.querySelectorAll('.detail-btn').forEach(btn => {
+            btn.addEventListener('click', () => showDetail(parseInt(btn.dataset.id)));
+        });
+
+        currentPage++;
+
+        if (end < books.length) {
+            const loadMoreDiv = document.createElement('div');
+            loadMoreDiv.className = 'load-more-container';
+            loadMoreDiv.innerHTML = `
+                <button class="load-more-btn" onclick="loadMoreBooks()">
+                    <i class="fas fa-chevron-down"></i> Загрузить ещё ${Math.min(PAGE_SIZE, books.length - end)} книг
+                </button>
+                <div style="margin-top:0.5rem; color:#a4847a; font-size:0.8rem;">
+                    Показано ${end} из ${books.length}
+                </div>
+            `;
+            container.parentNode.appendChild(loadMoreDiv);
+        } else {
+            if (books.length > 0) {
+                const doneDiv = document.createElement('div');
+                doneDiv.className = 'load-more-container';
+                doneDiv.innerHTML = `
+                    <div style="color:#a4847a; font-size:0.85rem;">
+                        ✅ Показаны все ${books.length} книг
+                    </div>
+                `;
+                container.parentNode.appendChild(doneDiv);
+            }
+        }
+    }
+
+    function loadMoreBooks() {
+        const container = document.querySelector('.book-grid');
+        if (!container) return;
+        const btn = document.querySelector('.load-more-btn');
+        if (btn) btn.disabled = true;
+
+        const start = currentPage * PAGE_SIZE;
+        const end = Math.min(start + PAGE_SIZE, currentBooks.length);
+        const pageBooks = currentBooks.slice(start, end);
+
+        const fragment = document.createDocumentFragment();
+        pageBooks.forEach(book => {
+            const card = createBookCard(book);
+            fragment.appendChild(card);
+        });
+        container.appendChild(fragment);
+
+        container.querySelectorAll('.add-cart-btn').forEach(btn => {
+            btn.addEventListener('click', () => addToCart(parseInt(btn.dataset.id)));
+        });
+        container.querySelectorAll('.fav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                toggleFavorite(parseInt(btn.dataset.id));
+                refreshCurrentPage();
+            });
+        });
+        container.querySelectorAll('.detail-btn').forEach(btn => {
+            btn.addEventListener('click', () => showDetail(parseInt(btn.dataset.id)));
+        });
+
+        currentPage++;
+
+        const loadMoreDiv = document.querySelector('.load-more-container');
+        if (loadMoreDiv) {
+            if (end < currentBooks.length) {
+                loadMoreDiv.innerHTML = `
+                    <button class="load-more-btn" onclick="loadMoreBooks()">
+                        <i class="fas fa-chevron-down"></i> Загрузить ещё ${Math.min(PAGE_SIZE, currentBooks.length - end)} книг
+                    </button>
+                    <div style="margin-top:0.5rem; color:#a4847a; font-size:0.8rem;">
+                        Показано ${end} из ${currentBooks.length}
+                    </div>
+                `;
+            } else {
+                loadMoreDiv.innerHTML = `
+                    <div style="color:#a4847a; font-size:0.85rem;">
+                        ✅ Показаны все ${currentBooks.length} книг
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // ================================================================================================================
+    // КАРТОЧКИ КНИГИ 
+    // ================================================================================================================
+
+    function createBookCard(book) {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        const coverStyle = book.cover ? `background-image: url('${book.cover}');` : '';
+
+        let badges = '';
+        if (book.isNew) badges += `<span class="badge badge-new">Новинка</span>`;
+        if (book.isBestseller) badges += `<span class="badge badge-bestseller">Бестселлер</span>`;
+        if (book.hasPromotion && book.discount >= 5) {
+            badges += `<span class="badge badge-discount">-${book.discount}%</span>`;
+        }
+        if (book.promotionType && book.discount >= 10) {
+            badges += `<span class="badge badge-promo">🔥</span>`;
+        }
+
+        const oldPriceHtml = book.oldPrice ? `<span class="old">${book.oldPrice} ₽</span>` : '';
+        const promoLabel = book.promotionType ? `<span class="promo-tag">${book.promotionType}</span>` : '';
+        const isFav = favorites.some(b => b.id === book.id);
+        const favClass = isFav ? 'active' : '';
+        const categoryTags = book.category.slice(0, 2).map(cat =>
+            `<span class="category-tag">${cat}</span>`
+        ).join('');
+
+        card.innerHTML = `
+            <div class="book-cover" style="${coverStyle}">
+                <i class="fas fa-book book-icon" style="display:${book.cover ? 'none' : 'block'}"></i>
+                ${badges}
+            </div>
+            <div class="book-info">
+                <div class="book-title">${book.title}</div>
+                <div class="book-author">${book.author}</div>
+                <div class="book-meta">${categoryTags}</div>
+                <div class="book-price">${book.price} ₽ ${oldPriceHtml} ${promoLabel}</div>
+                <div class="book-rating">
+                    <i class="fas fa-star"></i> ${book.rating}
+                    <span class="reviews-count">(${book.reviews})</span>
+                </div>
+                <div class="card-actions">
+                    <button class="add-cart-btn" data-id="${book.id}"><i class="fas fa-cart-plus"></i> В корзину</button>
+                    <button class="fav-btn ${favClass}" data-id="${book.id}"><i class="fas fa-heart"></i></button>
+                    <button class="detail-btn" data-id="${book.id}"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>
+        `;
+        return card;
+    }
+
+    // ================================================================================================================
+    // КАТАЛОГ С ПАГИНАЦИЕЙ
+    // ================================================================================================================
+
+    let currentFilter = 'all';
+
+    function showCatalog() {
+        const container = document.getElementById('appContainer');
+        const allCategories = ['all', ...new Set(BOOKS.flatMap(b => b.category).filter(c => c !== "политика" && c !== "биология" && c !== "история"))];
+
+        let filterButtons = allCategories.map(cat =>
+            `<button class="filter-btn ${cat === currentFilter ? 'active' : ''}" data-category="${cat}">${cat === 'all' ? 'Все книги' : cat}</button>`
+        ).join('');
+
+        container.innerHTML = `
+            <div class="section-title">
+                <span>📚 Каталог книг (${BOOKS.length})</span>
+                <a href="#" onclick="navigateTo('home'); return false;">← На главную</a>
+            </div>
+            <div class="catalog-filters" id="filterContainer">
+                ${filterButtons}
+            </div>
+            <div class="book-grid" id="catalogGrid"></div>
+        `;
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentFilter = btn.dataset.category;
+                showCatalog();
+            });
+        });
+
+        const filteredBooks = currentFilter === 'all'
+            ? BOOKS
+            : BOOKS.filter(b => b.category.includes(currentFilter));
+
+        renderBooksPaginated(filteredBooks, 'catalogGrid');
+    }
+
+    // ================================================================================================================
+    // КОРЗИНА
+    // ================================================================================================================
+
+    function addToCart(bookId) {
+        const book = BOOKS.find(b => b.id === bookId);
+        if (!book) return;
+        const existing = cart.find(b => b.id === bookId);
+        if (existing) {
+            existing.quantity = (existing.quantity || 1) + 1;
+        } else {
+            cart.push({ ...book, quantity: 1 });
+        }
+        saveCart();
+        updateCartUI();
+        updateUserDisplay();
+    }
+
+    function removeFromCart(bookId) {
+        cart = cart.filter(b => b.id !== bookId);
+        saveCart();
+        updateCartUI();
+        updateUserDisplay();
+    }
+
+    function updateQuantity(bookId, delta) {
+        const item = cart.find(b => b.id === bookId);
+        if (!item) return;
+        item.quantity = (item.quantity || 1) + delta;
+        if (item.quantity <= 0) {
+            removeFromCart(bookId);
+        } else {
+            saveCart();
+            updateCartUI();
+        }
+    }
+
+    function showCart() {
+        const container = document.getElementById('appContainer');
+        if (cart.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🛒</div>
+                    <h3>Корзина пуста</h3>
+                    <p>Похоже, вы ещё не выбрали ни одной книги. Самое время это исправить!</p>
+                    <button class="btn-primary" onclick="navigateTo('catalog')">Перейти в каталог</button>
+                </div>
+            `;
+            return;
+        }
+
+        let total = 0;
+        let itemsHtml = cart.map(item => {
+            const qty = item.quantity || 1;
+            total += item.price * qty;
+            const coverStyle = item.cover ? `background-image: url('${item.cover}');` : '';
+            return `
+                <div class="cart-item-modern">
+                    <div class="item-info">
+                        <div class="item-thumb" style="${coverStyle}"></div>
+                        <div>
+                            <div class="item-title">${item.title}</div>
+                            <div class="item-author">${item.author}</div>
+                            ${item.promotionType ? `<span style="font-size:0.65rem; color:#9b59b6; font-weight:600;">${item.promotionType}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="item-quantity">
+                        <button onclick="updateQuantity(${item.id}, -1)">−</button>
+                        <span>${qty}</span>
+                        <button onclick="updateQuantity(${item.id}, 1)">+</button>
+                    </div>
+                    <div class="item-price">${(item.price * qty).toFixed(0)} ₽</div>
+                    <button class="remove-btn" onclick="removeFromCart(${item.id})"><i class="fas fa-times"></i></button>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="section-title">
+                <span>🛒 Корзина</span>
+                <a href="#" onclick="navigateTo('home'); return false;">← На главную</a>
+            </div>
+            <div class="cart-wrapper">
+                <div class="cart-header">
+                    <span>Товар</span>
+                    <span>Кол-во</span>
+                    <span>Цена</span>
+                    <span></span>
+                </div>
+                ${itemsHtml}
+                <div class="cart-total-modern">
+                    <div>
+                        <span style="color:#7a5f55;">Итого:</span>
+                        <span class="total-price">${total.toFixed(0)} ₽</span>
+                        ${cart.some(b => b.hasPromotion) ? '<span style="font-size:0.8rem; color:#9b59b6; margin-left:0.5rem;">✨ С учётом скидок</span>' : ''}
+                    </div>
+                    <button class="checkout-btn" onclick="checkout()">
+                        <i class="fas fa-credit-card"></i> Оформить заказ
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    function checkout() {
+        if (!currentUser) {
+            alert('Пожалуйста, войдите в аккаунт');
+            navigateTo('profile');
+            return;
+        }
+        alert(`Спасибо за заказ, ${currentUser}!`);
+        cart = [];
+        saveCart();
+        updateCartUI();
+        updateUserDisplay();
+        navigateTo('home');
+    }
+
+    function updateCartUI() {
+        const container = document.getElementById('cartList');
+        if (!container) return;
+    }
+
+    // ==================================================================================================================
+    // ИЗБРАННОЕ
+    // ==================================================================================================================
+
+    function toggleFavorite(bookId) {
+        const book = BOOKS.find(b => b.id === bookId);
+        if (!book) return;
+        const idx = favorites.findIndex(b => b.id === bookId);
+        if (idx === -1) favorites.push({ ...book });
+        else favorites.splice(idx, 1);
+        saveFav();
+    }
+
+    function removeFromFav(bookId) {
+        favorites = favorites.filter(b => b.id !== bookId);
+        saveFav();
+        showFavorites();
+    }
+
+    function showFavorites() {
+        const container = document.getElementById('appContainer');
+        if (favorites.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">❤️</div>
+                    <h3>Избранное пусто</h3>
+                    <p>Вы ещё не добавили ни одной книги. Найдите свою идеальную книгу!</p>
+                    <button class="btn-primary" onclick="navigateTo('catalog')">Перейти в каталог</button>
+                </div>
+            `;
+            return;
+        }
+
+        let itemsHtml = favorites.map(book => {
+            const coverStyle = book.cover ? `background-image: url('${book.cover}');` : '';
+            return `
+                <div class="fav-card">
+                    <div class="fav-cover" style="${coverStyle}"></div>
+                    <div class="fav-badge">❤️</div>
+                    <div class="fav-title">${book.title}</div>
+                    <div class="fav-author">${book.author}</div>
+                    <div class="fav-price">${book.price} ₽</div>
+                    ${book.promotionType ? `<div style="font-size:0.6rem; color:#9b59b6;">${book.promotionType}</div>` : ''}
+                    <div class="fav-actions">
+                        <button class="add-cart-btn-fav" onclick="addToCart(${book.id})"><i class="fas fa-cart-plus"></i></button>
+                        <button class="remove-fav-btn" onclick="removeFromFav(${book.id})"><i class="fas fa-heart-broken"></i></button>
+                        <button class="detail-btn" onclick="showDetail(${book.id})"><i class="fas fa-eye"></i></button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="section-title">
+                <span>❤️ Избранное (${favorites.length})</span>
+                <a href="#" onclick="navigateTo('home'); return false;">← На главную</a>
+            </div>
+            <div class="fav-grid">${itemsHtml}</div>
+        `;
+    }
+
+    // =================================================================================================================
+    // ДЕТАЛЬНАЯ СТРАНИЦА
+    // =================================================================================================================
+    function generateReviews(bookId) {
+        const reviewers = ["Анна", "Михаил", "Елена", "Дмитрий", "Ольга", "Сергей", "Мария", "Иван"];
+        const texts = [
+            "Замечательная книга! Прочитал на одном дыхании.",
+            "Интересный сюжет, хорошо прописанные персонажи.",
+            "Одна из лучших книг, которые я читал.",
+            "Сначала сложно, потом не мог оторваться. Шедевр!",
+            "Неожиданный финал! Заставила задуматься.",
+            "Отличная книга для вечернего чтения.",
+            "Мне очень понравилось! Буду рекомендовать.",
+            "Захватывающий сюжет, яркие образы."
+        ];
+        const reviews = [];
+        const count = 4 + Math.floor(Math.random() * 4);
+        for (let i = 0; i < count; i++) {
+            reviews.push({
+                reviewer: reviewers[i % reviewers.length],
+                rating: (3 + Math.floor(Math.random() * 3)) + '.' + Math.floor(Math.random() * 9),
+                text: texts[i % texts.length],
+                date: new Date(2023 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toLocaleDateString('ru-RU')
+            });
+        }
+        return reviews;
+    }
+
+    function showDetail(bookId) {
+        const book = BOOKS.find(b => b.id === bookId);
+        const container = document.getElementById('appContainer');
+        if (!book) return;
+        const isFav = favorites.some(b => b.id === book.id);
+        const inCart = cart.some(b => b.id === book.id);
+        const reviews = generateReviews(book.id);
+        const avgRating = (reviews.reduce((sum, r) => sum + parseFloat(r.rating), 0) / reviews.length).toFixed(1);
+        const coverStyle = book.cover ? `background-image: url('${book.cover}');` : '';
+
+        const reviewsHtml = reviews.map(r => `
+            <div class="review-item">
+                <div class="review-header">
+                    <span class="reviewer">${r.reviewer}</span>
+                    <span class="review-rating"><i class="fas fa-star"></i> ${r.rating}</span>
+                    <span class="review-date">${r.date}</span>
+                </div>
+                <div class="review-text">${r.text}</div>
+            </div>
+        `).join('');
+
+        container.innerHTML = `
+            <div style="max-width: 960px; margin: 0 auto;">
+                <button onclick="navigateTo('catalog')" style="background:none; border:none; color:var(--coral); font-size:0.9rem; cursor:pointer; margin-bottom:1rem;">
+                    <i class="fas fa-arrow-left"></i> Вернуться в каталог
+                </button>
+                <div style="display:flex; flex-wrap:wrap; gap:2rem; background:white; padding:2rem; border-radius:var(--radius); box-shadow:var(--shadow);">
+                    <div style="flex:0 0 240px; height:320px; background:#f3e6e1; border-radius:20px; background-size:cover; background-position:center; ${coverStyle} display:flex; align-items:center; justify-content:center;">
+                        <i class="fas fa-book" style="display:${book.cover ? 'none' : 'block'}; opacity:0.35; font-size:4rem;"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="display:flex; flex-wrap:wrap; gap:0.3rem; margin-bottom:0.3rem;">
+                            ${book.category.map(c => `<span style="background:var(--coral-light); padding:0.1rem 0.6rem; border-radius:20px; font-size:0.7rem; color:var(--coral-dark); font-weight:600;">${c}</span>`).join('')}
+                        </div>
+                        <h2 style="font-size:1.8rem; line-height:1.2;">${book.title}</h2>
+                        <p style="font-size:1.1rem; color:#6b4f44;">${book.author}</p>
+                        <p style="font-size:1.6rem; font-weight:700; color:var(--coral-dark); margin:0.3rem 0;">
+                            ${book.price} ₽
+                            ${book.oldPrice ? `<span style="text-decoration:line-through; color:#a4847a; font-size:1rem; margin-left:8px;">${book.oldPrice} ₽</span>` : ''}
+                            ${book.promotionType ? `<span style="font-size:0.8rem; background:#9b59b6; color:white; padding:0.1rem 0.6rem; border-radius:20px; margin-left:8px;">${book.promotionType}</span>` : ''}
+                        </p>
+                        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                            <span style="background:#fcf6f3; padding:0.1rem 0.6rem; border-radius:20px; font-size:0.85rem;"><i class="fas fa-star" style="color:#f4b942;"></i> ${book.rating}</span>
+                            <span style="color:#7a5f55; font-size:0.85rem;">${book.reviews} отзывов</span>
+                        </div>
+                        <div style="background:#fcf6f3; padding:1rem; border-radius:16px; margin:0.5rem 0;">
+                            <p style="color:#3d2a24; line-height:1.7; font-size:0.95rem;">${book.description || 'Увлекательное произведение, которое стоит прочитать.'}</p>
+                        </div>
+                        <div style="display:flex; gap:0.8rem; flex-wrap:wrap; margin-top:1rem;">
+                            <button onclick="addToCart(${book.id})" style="background:var(--coral); border:none; padding:0.6rem 2rem; border-radius:60px; color:white; font-weight:700; font-size:1rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:var(--transition);">
+                                <i class="fas fa-cart-plus"></i> ${inCart ? 'В корзине' : 'В корзину'}
+                            </button>
+                            <button onclick="toggleFavorite(${book.id}); showDetail(${book.id});" style="background:var(--coral-light); border:none; padding:0.6rem 1.6rem; border-radius:60px; color:var(--coral-dark); font-weight:700; font-size:1rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:var(--transition);">
+                                <i class="fas fa-heart" style="color:${isFav ? 'var(--coral)' : '#b97a6a'}"></i> ${isFav ? 'В избранном' : 'В избранное'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-reviews">
+                    <h3><i class="fas fa-comments"></i> Отзывы (${reviews.length})</h3>
+                    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem; padding:0.3rem 0.8rem; background:#fcf6f3; border-radius:16px;">
+                        <span style="font-size:1.3rem; font-weight:700; color:var(--coral-dark);">${avgRating}</span>
+                        <span><i class="fas fa-star" style="color:#f4b942;"></i> Средняя оценка</span>
+                    </div>
+                    ${reviewsHtml}
+                </div>
+            </div>
+        `;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =================================================================================================================
+    // ПОИСК
+    // =================================================================================================================
+    function performSearch() {
+        const input = document.getElementById('globalSearch');
+        const query = input.value.trim().toLowerCase();
+        if (!query) { navigateTo('home'); return; }
+        const results = BOOKS.filter(b =>
+            b.title.toLowerCase().includes(query) ||
+            b.author.toLowerCase().includes(query) ||
+            b.category.some(c => c.toLowerCase().includes(query))
+        );
+        const container = document.getElementById('appContainer');
+
+        if (results.length === 0) {
+            container.innerHTML = `
+                <div class="section-title">
+                    <span>🔍 Поиск: «${query}»</span>
+                    <a href="#" onclick="navigateTo('home'); return false;">← На главную</a>
+                </div>
+                <div class="empty-state">
+                    <div class="empty-icon">📖</div>
+                    <h3>Ничего не найдено</h3>
+                    <p style="font-style:italic; font-size:1.1rem; color:var(--coral);">${getRandomPhrase()}</p>
+                    <button class="btn-primary" onclick="navigateTo('catalog')" style="margin-top:0.8rem;">Все книги</button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="section-title">
+                <span>🔍 Поиск: «${query}» (${results.length})</span>
+                <a href="#" onclick="navigateTo('home'); return false;">← На главную</a>
+            </div>
+            <div class="book-grid" id="searchGrid"></div>
+        `;
+        renderBooksPaginated(results, 'searchGrid');
+    }
+
+    // =================================================================================================================
+    // АВТОРИЗАЦИЯ
+    // =================================================================================================================
+    function showAuthForm(mode = 'login') {
+        const container = document.getElementById('appContainer');
+        const isLogin = mode === 'login';
+        container.innerHTML = `
+            <div class="auth-form">
+                <h2><i class="fas fa-${isLogin ? 'sign-in-alt' : 'user-plus'}"></i> ${isLogin ? 'Вход' : 'Регистрация'}</h2>
+                <form id="authForm" onsubmit="return handleAuth(event, '${mode}')">
+                    ${!isLogin ? `
+                        <div class="form-group">
+                            <label>Имя</label>
+                            <input type="text" id="regName" placeholder="Ваше имя" required>
+                        </div>
+                    ` : ''}
+                    <div class="form-group">
+                        <label>Телефон</label>
+                        <input type="text" id="authLogin" placeholder="Телефон" required>
+                        <div class="error-msg" id="loginError">Только цифры</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Пароль</label>
+                        <input type="password" id="authPassword" placeholder="Пароль" required>
+                    </div>
+                    <button type="submit" class="auth-btn">${isLogin ? 'Войти' : 'Зарегистрироваться'}</button>
+                </form>
+                <div class="switch-link">
+                    ${isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?'}
+                    <a onclick="showAuthForm('${isLogin ? 'register' : 'login'}')">${isLogin ? 'Зарегистрироваться' : 'Войти'}</a>
+                </div>
+                <div id="authMessage" style="margin-top:0.8rem; text-align:center; color:var(--coral);"></div>
+            </div>
+        `;
+        const loginInput = document.getElementById('authLogin');
+        if (loginInput) {
+            loginInput.addEventListener('input', function() {
+                if (mode === 'register') {
+                    this.value = this.value.replace(/\D/g, '');
+                }
+            });
+        }
+    }
+
+    function handleAuth(e, mode) {
+        e.preventDefault();
+        const login = document.getElementById('authLogin').value.trim();
+        const password = document.getElementById('authPassword').value.trim();
+        const msg = document.getElementById('authMessage');
+
+        if (mode === 'register') {
+            const name = document.getElementById('regName').value.trim();
+            if (!name || !login || !password) { msg.textContent = 'Заполните все поля'; return false; }
+            if (!/^\d+$/.test(login)) { document.getElementById('loginError').style.display = 'block'; return false; }
+            if (users.some(u => u.login === login)) { msg.textContent = 'Телефон уже зарегистрирован'; return false; }
+            users.push({ name, login, password });
+            saveUsers();
+            saveUser(name);
+            msg.textContent = '✅ Регистрация успешна!';
+            setTimeout(() => navigateTo('profile'), 800);
+            return false;
+        } else {
+            const user = users.find(u => u.login === login && u.password === password);
+            if (!user) { msg.textContent = '❌ Неверный телефон или пароль'; return false; }
+            saveUser(user.name);
+            msg.textContent = '✅ Добро пожаловать!';
+            setTimeout(() => navigateTo('profile'), 800);
+            return false;
+        }
+    }
+
+    function logout() {
+        saveUser(null);
+        navigateTo('home');
+    }
+
+    // =================================================================================================================
+    // ПРОФИЛЬ
+    // =================================================================================================================
+    function showProfile() {
+        const container = document.getElementById('appContainer');
+        if (!currentUser) { showAuthForm('login'); return; }
+        const user = users.find(u => u.name === currentUser);
+        const userName = user ? user.name : currentUser;
+        const userLogin = user ? user.login : '—';
+
+        const activePromos = BOOKS.filter(b => b.hasPromotion && b.discount >= 5).length;
+
+        container.innerHTML = `
+            <div class="profile-card">
+                <div class="avatar"><i class="fas fa-user-circle"></i></div>
+                <div class="user-name">${userName}</div>
+                <div class="user-email"><i class="fas fa-phone"></i> ${userLogin}</div>
+                <div class="stat-grid">
+                    <div class="stat-item"><div class="num">${cart.length}</div><div class="label">В корзине</div></div>
+                    <div class="stat-item"><div class="num">${favorites.length}</div><div class="label">Избранное</div></div>
+                    <div class="stat-item"><div class="num">${activePromos}</div><div class="label">Акций сегодня</div></div>
+                </div>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Выйти</button>
+            </div>
+        `;
+    }
+
+    // =================================================================================================================
+    // НАВИГАЦИЯ
+    // =================================================================================================================
+    function goHome() {
+        const container = document.getElementById('appContainer');
+        const activePromos = BOOKS.filter(b => b.hasPromotion && b.discount >= 5).length;
+        container.innerHTML = `
+            <div class="hero-banner">
+                <div>
+                    <h1>📖 Добро пожаловать в «Читатель»</h1>
+                    <p>Книги для настоящих ценителей. Более ${BOOKS.length} книг на любой вкус.</p>
+                    <p style="font-size:0.9rem; color:#9b59b6; margin-top:0.3rem;">🔥 Сегодня действует ${activePromos} акций!</p>
+                </div>
+                <div>
+                    <button class="btn-primary" onclick="navigateTo('catalog')">Каталог →</button>
+                </div>
+            </div>
+            <div class="section-title">
+                <span>🔥 Новинки и бестселлеры</span>
+                <a href="#" onclick="navigateTo('catalog'); return false;">Смотреть все →</a>
+            </div>
+            <div class="book-grid" id="mainGrid"></div>
+        `;
+        const featured = BOOKS.filter(b => b.isNew || b.isBestseller).slice(0, 8);
+        renderBooksPaginated(featured.length > 0 ? featured : BOOKS.slice(0, 8), 'mainGrid');
+        document.getElementById('globalSearch').value = '';
+    }
+
+    function refreshCurrentPage() {
+        const route = window._currentRoute || 'home';
+        navigateTo(route);
+    }
+
+    function navigateTo(route) {
+        window._currentRoute = route;
+        switch (route) {
+            case 'catalog': showCatalog(); break;
+            case 'cart': showCart(); break;
+            case 'favorites': showFavorites(); break;
+            case 'profile': showProfile(); break;
+            case 'detail': break;
+            case 'login': showAuthForm('login'); break;
+            case 'register': showAuthForm('register'); break;
+            default: goHome();
+        }
+        updateUserDisplay();
+    }
+
+    // ================================================================================================================
+    // ЗАПУСК
+    // ================================================================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const href = link.getAttribute('href');
+                if (href.includes('home')) navigateTo('home');
+                else if (href.includes('catalog')) navigateTo('catalog');
+                else if (href.includes('favorites')) navigateTo('favorites');
+                else if (href.includes('cart')) navigateTo('cart');
+                else if (href.includes('profile')) navigateTo('profile');
+            });
+        });
+        updateUserDisplay();
+        navigateTo('home');
+    });
+
+    // Глобальные функции
+    window.navigateTo = navigateTo;
+    window.goHome = goHome;
+    window.showCatalog = showCatalog;
+    window.showCart = showCart;
+    window.showFavorites = showFavorites;
+    window.showProfile = showProfile;
+    window.showDetail = showDetail;
+    window.performSearch = performSearch;
+    window.addToCart = addToCart;
+    window.toggleFavorite = toggleFavorite;
+    window.removeFromFav = removeFromFav;
+    window.removeFromCart = removeFromCart;
+    window.updateQuantity = updateQuantity;
+    window.checkout = checkout;
+    window.logout = logout;
+    window.showAuthForm = showAuthForm;
+    window.handleAuth = handleAuth;
+    window.refreshCurrentPage = refreshCurrentPage;
+    window.loadMoreBooks = loadMoreBooks;
+</script>
+</body>
+</html>
